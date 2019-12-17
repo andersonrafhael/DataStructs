@@ -1,0 +1,156 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+typedef struct _stack stack_t;
+typedef struct _node node_t;	
+
+stack_t* newStack();
+node_t* newNode(char element);
+
+struct _node {
+  char c;
+  node_t *next;
+};
+
+struct _stack {
+  node_t *topo;
+  int size;
+};
+
+node_t *newNode(char element) {
+  node_t *novo  = (node_t *) malloc(sizeof(node_t));
+  novo->c = element;
+  novo->next = NULL;
+return novo;
+}
+
+stack_t *newStack() {
+  stack_t *novo = (stack_t*) malloc(sizeof(stack_t));
+  novo->topo = NULL;
+  novo->size = 0;
+return novo;
+}
+
+void insert_stack(stack_t *stack, char element) {
+  node_t *aux = newNode(element);
+  aux->next = stack->topo;
+  stack->topo = aux;
+  stack->size++; 
+}
+
+void pop_stack(stack_t *stack) {
+  int top;
+	if (stack->size > 0) {
+    node_t *aux = stack->topo;
+    top = aux->c;
+		stack->topo = stack->topo->next;
+		stack->size--;
+    free(aux);
+	}
+}
+
+bool is_empty_stack(stack_t* stack) {
+  if(stack->topo != NULL)
+    return  0;
+return 1; 
+}
+
+typedef struct binary_tree {
+  int item;
+  struct binary_tree *left, *right;
+} binary_tree;
+
+
+binary_tree *create_empty_bt() {
+return NULL;
+}
+
+binary_tree* create_binary_tree(int item, binary_tree *right, binary_tree *left) {
+  binary_tree *raiz = (binary_tree *) malloc(sizeof(binary_tree));
+  raiz->item = item;
+  raiz->left = left;
+  raiz->right = right;
+return raiz;
+}
+
+int is_empty(binary_tree *bt) {
+  if(bt == NULL)
+    return 1;
+return 0;
+}
+
+int findIndex(char *string, int index_ini, int index_fim) { 
+  int i;
+  if (index_ini > index_fim) 
+    return -1; 
+  
+  stack_t *pilha = newStack(); 
+  
+  for(i=index_ini; i < index_fim; i++) { 
+    if (string[i] == '(') 
+      insert_stack(pilha, string[i]);
+
+    else if (string[i] == ')') { 
+      if(pilha->topo->c == '(') { 
+        pop_stack(pilha);
+        if (is_empty_stack(pilha)) 
+          return i; 
+      } 
+    } 
+  } 
+return -1; 
+} 
+  
+binary_tree *TreeFromString(char *string, int index_ini, int index_fim) { 
+    
+  if (index_ini > index_fim) 
+    return NULL; 
+  
+  binary_tree *raiz = create_binary_tree(string[index_ini], NULL, NULL); 
+  int index = -1; 
+  
+  if(index_ini+1 <= index_fim && string[index_ini + 1] == '(') 
+      index = findIndex(string, index_ini+1, index_fim); 
+  
+  if (index != -1) { 
+    raiz->left = TreeFromString(string, index_ini+2, index-1); 
+    raiz->right = TreeFromString(string, index+2, index_fim-1); 
+  } 
+
+return raiz; 
+} 
+
+void print_in_order(binary_tree *bt) {
+  if (bt != NULL) {
+    print_in_order(bt->left);
+    printf("%d ", bt->item);
+    print_in_order(bt->right);
+  }
+}
+
+void print_pre_order(binary_tree *bt) {
+  if (!is_empty(bt)) {
+    printf("%d ", bt->item);
+    print_pre_order(bt->left);
+    print_pre_order(bt->right);
+  }
+}
+
+int main() {
+  
+  int num;
+  char string[100];
+
+  binary_tree *bt = create_empty_bt();
+
+  scanf("%s", string); 
+
+  bt = TreeFromString(string, 0, strlen(string));
+
+  print_in_order(bt);
+
+
+return 0;
+}
